@@ -40,6 +40,13 @@ city_add_args.add_argument("temp", type=str, required=True, help="Please provide
 city_add_args.add_argument("weather", type=str, required=True, help="Please provide the weather condition")
 city_add_args.add_argument("people", type=str, required=True, help="Please provide the number of people")
 
+# Request Update
+city_update_args = reqparse.RequestParser()
+city_update_args.add_argument("name", type=str,  help="Please edit the city name")
+city_update_args.add_argument("temp", type=str,  help="Please edit the temperature")
+city_update_args.add_argument("weather", type=str,  help="Please edit the weather condition")
+city_update_args.add_argument("people", type=str,  help="Please edit the number of people")
+
 # Resource Fields
 resource_field = {
     "id": fields.Integer,
@@ -77,6 +84,25 @@ class WeatherCity(Resource):
         db.session.add(city)
         db.session.commit()
         return city,201
+    
+    @marshal_with(resource_field)
+    def patch(self,city_id):
+        args = city_update_args.parse_args()
+        result=CityModel.query.filter_by(id=city_id).first()
+        if not result:
+            abort(404,message="not found request")
+        if args["name"]:
+            result.name = args["name"]
+        if args["temp"]:
+            result.temp = args["temp"]
+        if args["weather"]:
+            result.weather = args["weather"]
+        if args["people"]:
+            result.people = args["people"]
+            
+        db.session.commit()
+        return result
+        
         
 
 #call
